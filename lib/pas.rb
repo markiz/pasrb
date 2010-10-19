@@ -10,19 +10,16 @@ class PAS
   # Your api key
   attr_accessor :api_key
 
-  # Your api member id (for remote authentication)
-  attr_accessor :api_member_id
-  
   # api token for querying, set it if you know it or let it be auto-requested
-  attr_writer :api_token
-
+  attr_accessor :api_token
+  
+  
 
   
-  def initialize(api_site, api_key, api_token = nil, api_member_id = nil)
+  def initialize(api_key, api_token, api_site = "publisher.pokeraffiliatesolutions.com")
     self.api_site      = api_site
     self.api_key       = api_key
     self.api_token     = api_token
-    self.api_member_id = api_member_id
   end
 
   # Site that is using the PAS api
@@ -41,55 +38,104 @@ class PAS
     CGI::escape(Base64.encode64(signature).chomp)
   end
   
-  def api_token
-    @api_token ||= request_api_token
+  ## MEMBER LEVEL
+  
+  # List all members
+  # That is a very request-heavy method, be afraid, be very afraid
+  def list_all_members
+    @all_members ||= list_all_members!
+  end
+  alias_method :all_members, :list_all_members
+  
+  def list_all_members!
+    members = (1..member_page_count).inject([]) {|result, page| result + member_page(page) }    
+    members.inject({}) do |result, member| 
+      result[member[:id]]    = member
+      result[member[:login]] = member
+      result
+    end
+  rescue
+    {}
   end
   
-  def get_member_trackers_stats(start_date, end_date)
+  # Returns member page count
+  # @api private
+  def member_page_count
+    @member_page_count ||= member_page_count!
+  end
+  
+  # @api private
+  def member_page_count!
+    result = xml_to_hash(make_request("/publisher_members.xml", "GET"))
+    result["members"]["total_pages"].to_i
+  rescue
+    0
+  end
+  
+  # Gets a single members page
+  # @api private
+  def member_page(page)
+    result = xml_to_hash(make_request("/publisher_members.xml", "GET", {:page => page}))
+    members = [result["members"]["member"]].flatten    
+    symbolize_keys(members).map {|m| m[:id] = m[:id].to_i; m}
+  rescue
+    []
+  end
+
+  # Gets a list of all member trackers
+  def get_member_trackers(member_id)
+    result = xml_to_hash(make_request("/publisher_members/#{member_id}/stats.xml", "GET"))
+    [result["statistics"]["member_trackers"]["member_tracker"]].flatten.map {|t| symbolize_keys(t) }.map {|t| t[:id] = t[:id].to_i; t }
+  rescue
+    []
+  end
+  
+  def get_member_trackers_stats(member_id, start_date, end_date)
     @member_tracker_stats ||= {}
-    @member_tracker_stats[start_date] ||= {}
-    @member_tracker_stats[start_date][end_date] ||= get_member_trackers_stats!(start_date, end_date)
+    @member_tracker_stats[member_id] ||= {}
+    @member_tracker_stats[member_id][start_date] ||= {}
+    @member_tracker_stats[member_id][start_date][end_date] ||= get_member_trackers_stats!(member_id, start_date, end_date)
   end
   
-  def get_member_trackers_stats!(start_date, end_date)
+  def get_member_trackers_stats!(member_id, start_date, end_date)
     start_date = start_date.strftime("%Y-%m-%d")
     end_date   = end_date.strftime("%Y-%m-%d")
-    response = xml_to_hash(make_request("/publisher_members/#{api_member_id}/stats.xml", "GET", {:start_date => start_date, :end_date => end_date}))
-    trackers = response["statistics"][0]["member_trackers"][0]["member_tracker"]
+    response = xml_to_hash(make_request("/publisher_members/#{member_id}/stats.xml", "GET", {:start_date => start_date, :end_date => end_date}))
+    trackers = [response["statistics"]["member_trackers"]["member_tracker"]].flatten
     trackers.inject({}) do |result, tracker|
-      id = tracker["id"][0].to_i
+      id = tracker["id"].to_i
       result[id] = {
-        :identifier    => tracker["identifier"][0],
-        :poker_room_id => tracker["poker_room_id"][0],
-        :poker_room    => tracker["poker_room"][0],
-        :mgr           => tracker["mgr"][0].to_f,
-        :rakeback      => tracker["rakeback"][0].to_f
+        :identifier    => tracker["identifier"],
+        :poker_room_id => tracker["poker_room_id"],
+        :poker_room    => tracker["poker_room"],
+        :mgr           => tracker["mgr"].to_f,
+        :rakeback      => tracker["rakeback"].to_f
       }
       result[id.to_s] = result[id]
-      result[tracker["identifier"][0]] = result[id]
+      result[tracker["identifier"]] = result[id]
       result
     end
   rescue
     nil
   end
   
-  def get_member_tracker_stats(identifier, start_date, end_date)
-    trackers = get_member_trackers_stats(start_date, end_date)
-    trackers ? trackers[identifier] : nil
+  def get_member_tracker_stats(member_id, tracker_id, start_date, end_date)
+    trackers = get_member_trackers_stats(member_id, start_date, end_date)
+    trackers ? trackers[tracker_id] : nil
   rescue
     nil
   end
   
-  def create_member_tracker(identifier, website_offer_id)
-    new_member_tracker = {:member_tracker => {:identifier => identifier, :website_offer_id => website_offer_id}}
-    response = make_request("/publisher_members/#{api_member_id}/publisher_member_trackers.xml", "POST", hash_to_xml(new_member_tracker))
-    response = xml_to_hash(response)["member_tracker"][0]
+  def create_member_tracker(member_id, identifier, website_offer_id)
+    new_member_tracker = {"member_tracker" => {"identifier" => identifier, "website_offer_id" => website_offer_id}}
+    response = make_request("/publisher_members/#{member_id}/publisher_member_trackers.xml", "POST", hash_to_xml(new_member_tracker))
+    response = xml_to_hash(response)["member_tracker"]
     result = {}
-    result[:affiliate_id]         = response["affiliate_id"][0]["content"].to_i
-    result[:id]                   = response["id"][0]["content"].to_i
-    result[:identifier]           = response["identifier"][0]
-    result[:member_rakeback_rate] = response["member_rakeback_rate"][0]
-    result[:poker_room_id]        = response["poker_room_id"][0]
+    result[:affiliate_id]         = response["affiliate_id"]["content"].to_i
+    result[:id]                   = response["id"]["content"].to_i
+    result[:identifier]           = response["identifier"]
+    result[:member_rakeback_rate] = response["member_rakeback_rate"]
+    result[:poker_room_id]        = response["poker_room_id"]
     result
   rescue
     nil
@@ -97,7 +143,7 @@ class PAS
 #protected
   def xml_to_hash(xml)
     XmlSimple.xml_in(xml, 
-      'forcearray'   => true, 
+      'forcearray'   => false, 
       'forcecontent' => false, 
       'keeproot'     => true
     )
@@ -107,14 +153,6 @@ class PAS
     XmlSimple.xml_out(hash,
       'keeproot' => true
     )
-  end
-
-  def request_api_token
-    login_data = {:member => api_member_id}
-    response = make_request("/remote_auth.xml", "POST", hash_to_xml(login_data), false)
-    xml_to_hash(response)["remote_auth_token"][0]
-  rescue
-    nil
   end
   
   def new_request
@@ -127,21 +165,49 @@ class PAS
     query_params = if signed
       timestamp = Time.now.to_i
       {
-        :timestamp => timestamp,
-        :api_token => api_token,
-        :signature => request_signature(uri, method, timestamp) 
+        :timestamp, timestamp,        
+        :api_token, api_token,
+        :signature, request_signature(uri, method, timestamp)
       }
     else
       {}
     end
-    
+
     case method
     when "GET"
-      request.get(api_site + uri, Mechanize::Util.build_query_string(payload.merge(query_params))).body
+      request.get(api_site + uri + "?" + build_query_string(query_params.merge(payload))).body
     when "POST"
-      request.post(api_site + uri + "?" + Mechanize::Util.build_query_string(query_params), payload).body
+      request.post(api_site + uri + "?" + build_query_string(query_params), payload, "Content-Type" => "application/xml").body
     else
       nil
+    end
+  end
+
+
+  #
+  # Basically the same as the Mechanize::Util.build_query_string but without urlencode
+  # (would have urlencoded it twice otherwise)
+  #
+  def build_query_string(params)
+    params.map { |k,v|
+      [k.to_s, v.to_s].join("=") if k
+    }.compact.join('&')
+  end
+  
+  # recursive key symbolization
+  def symbolize_keys(arg)
+    case arg
+    when Array
+      arg.map { |elem| symbolize_keys elem }
+    when Hash
+      Hash[
+        arg.map { |key, value|  
+          k = key.is_a?(String) ? key.to_sym : key
+          v = symbolize_keys value
+          [k,v]
+        }]
+    else
+      arg
     end
   end
 end
