@@ -377,4 +377,80 @@ describe PAS do
       subject.create_member_tracker(member_id, identifier, website_offer_id).should == nil
     end
   end
+  
+  describe "#website_offers" do
+    before(:each) {
+      stub_request('xml version="1.0" encoding="UTF-8"?>
+                    <offers>
+                    <offer>
+                        <id>4881</id>
+                        <poker_room_id>6</poker_room_id>
+                        <poker_room_xml_url>https://publisher.pokeraffiliatesolutions.com/feeds/poker_rooms/absolute-poker.xml</poker_room_xml_url>
+                        <slug>absolute-poker</slug>
+                        <image_url>http://publisher.pokeraffiliatesolutions.com/images/offers/lg_6.gif</image_url>
+                        <icon_url>http://publisher.pokeraffiliatesolutions.com/images/icons/icon_6.gif</icon_url>
+                        <tny_image_url>http://publisher.pokeraffiliatesolutions.com/images/offers/tny_6.gif</tny_image_url>
+                        <name>Absolute Poker</name>
+                        <network>Cereus</network>
+                        <direct_url>http://publisher.pokeraffiliatesolutions.com/outgoing/4881</direct_url>
+                        <link>http://www.raketracker.ru/rakeback/absolute-poker.html</link>
+                        <rb_player>30%</rb_player>
+                        <stats>Daily</stats>
+                        <sitebonus>150% up to $500</sitebonus>
+                        <raketype>contributed</raketype>
+                        <offer_type>Rakeback</offer_type>
+                        <signup_code>RAKETRACK</signup_code>
+                        <account_identifier>Screen Name</account_identifier>
+                        <show_cookies_message>true</show_cookies_message>
+                        <requires_preloaded_tracker>false</requires_preloaded_tracker>
+                        <promotions>
+                          <promotion>
+                            <name>Cereus Rake Race</name>
+                            <feed_url>https://publisher.pokeraffiliatesolutions.com/feeds/promotions/CEREUS.xml?type=rake_race</feed_url>
+                          </promotion>
+                        </promotions>
+                      </offer>
+                      <offer>
+                        <id>34835</id>
+                        <poker_room_id>85</poker_room_id>
+                        <poker_room_xml_url>https://publisher.pokeraffiliatesolutions.com/feeds/poker_rooms/minted-poker.xml</poker_room_xml_url>
+                        <slug>minted-poker</slug>
+                        <image_url>http://publisher.pokeraffiliatesolutions.com/images/offers/lg_85.gif</image_url>
+                        <icon_url>http://publisher.pokeraffiliatesolutions.com/images/icons/icon_85.gif</icon_url>
+                        <tny_image_url>http://publisher.pokeraffiliatesolutions.com/images/offers/tny_85.gif</tny_image_url>
+                        <name>Minted Poker</name>
+                        <network>Everleaf Gaming</network>
+                        <direct_url>http://publisher.pokeraffiliatesolutions.com/outgoing/34835</direct_url>
+                        <link>http://www.raketracker.ru/rakeback/minted-poker.html</link>
+                        <rb_player>40%</rb_player>
+                        <stats>Monthly</stats>
+                        <sitebonus>100% up to $400</sitebonus>
+                        <raketype>contributed</raketype>
+                        <offer_type>Rakeback</offer_type>
+                        <signup_code>TrackRB</signup_code>
+                        <account_identifier>Nickname</account_identifier>
+                        <show_cookies_message>true</show_cookies_message>
+                        <requires_preloaded_tracker>false</requires_preloaded_tracker>
+                        <promotions>
+                          <promotion>
+                            <name>Minted Rake Chase</name>
+                            <feed_url>https://publisher.pokeraffiliatesolutions.com/feeds/promotions/minted.xml?type=rake_chase</feed_url>
+                          </promotion>
+                        </promotions>
+                      </offer>
+                    </offers>')
+    }
+    
+    it "should gather website offers from api" do
+      website_offers = subject.website_offers(12345)
+      website_offers[1][:id].should == 34835
+      website_offers[1][:slug].should == "minted-poker"
+    end
+    
+    it "should return empty array on failure" do
+      stub_request("<invalid></xml>")
+      subject.website_offers(12345).should == []
+    end
+  end
+  
 end

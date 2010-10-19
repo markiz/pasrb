@@ -2,7 +2,7 @@
 
 Gem::Specification.new do |s|
   s.name = %q{pasrb}
-  s.version = "0.0.1"
+  s.version = "0.0.2"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 1.2") if s.respond_to? :required_rubygems_version=
   s.authors = ["Markiz"]
@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
   s.description = %q{PokerAffiliateSupport api querying via ruby}
   s.email = %q{markizko@gmail.com}
   s.extra_rdoc_files = ["CHANGELOG", "LICENSE", "README", "lib/pas.rb"]
-  s.files = ["CHANGELOG", "LICENSE", "Manifest", "README", "Rakefile", "autotest/discover.rb", "lib/pas.rb", "spec/pas_spec.rb", "spec/spec_helper.rb", "pasrb.gemspec"]
+  s.files = ["CHANGELOG", "LICENSE", "Manifest", "README", "Rakefile", "autotest/discover.rb", "lib/pas.rb", "pasrb.gemspec", "spec/pas_spec.rb", "spec/spec_helper.rb"]
   s.homepage = %q{http://github.com/markiz/pasrb}
   s.rdoc_options = ["--line-numbers", "--inline-source", "--title", "Pasrb", "--main", "README"]
   s.require_paths = ["lib"]

@@ -90,6 +90,8 @@ class PAS
     []
   end
   
+  # Gather stats for specific member for specific period of time
+  # Warning: probably not page aware: didn't check that one
   def get_member_trackers_stats(member_id, start_date, end_date)
     @member_tracker_stats ||= {}
     @member_tracker_stats[member_id] ||= {}
@@ -118,7 +120,7 @@ class PAS
   rescue
     nil
   end
-  
+    
   def get_member_tracker_stats(member_id, tracker_id, start_date, end_date)
     trackers = get_member_trackers_stats(member_id, start_date, end_date)
     trackers ? trackers[tracker_id] : nil
@@ -126,6 +128,8 @@ class PAS
     nil
   end
   
+  
+  # Creates a member for given website offer  
   def create_member_tracker(member_id, identifier, website_offer_id)
     new_member_tracker = {"member_tracker" => {"identifier" => identifier, "website_offer_id" => website_offer_id}}
     response = make_request("/publisher_members/#{member_id}/publisher_member_trackers.xml", "POST", hash_to_xml(new_member_tracker))
@@ -140,6 +144,17 @@ class PAS
   rescue
     nil
   end
+  
+  # Returns array of website offers for given website id
+  def website_offers(website_id)
+    response = make_request("/website_offers.xml", "GET", {:website_id => website_id})
+    response = [xml_to_hash(response)["offers"]["offer"]].flatten
+    symbolize_keys(response).map {|o| o[:id] = o[:id].to_i; o }
+  rescue
+    []
+  end
+  alias_method :get_website_offers, :website_offers
+  
 #protected
   def xml_to_hash(xml)
     XmlSimple.xml_in(xml, 

@@ -1,11 +1,11 @@
 PAS.rb -- the ruby window to PAS API
-------------------------------------
+====================================
 
 This gem is a client library for querying PAS API. 
 API docs can be found here: http://www.pokeraffiliatesolutions.com/docs/
 
 Installation
-------------
+============
 
 * `gem install pasrb`
 * `require pas`
@@ -13,13 +13,24 @@ Installation
     pas_api = PAS.new('YOUR_API_ACCESS_KEY', 'YOUR_API_ACCESS_TOKEN')
     pas_api.list_all_members # { "SAMPLEUSER" => {:id => 28746, :login => "SAMPLEUSER", ...}, "WTFOMG" => {:id => 28123, :login => "WTFOMG", ...} }
     
+    
+Problems
+========
+
+Most methods are safeguarded with rescues. If you have problems struggling with them, or you need explicit error messages, let me know, I'll set up some
+anti-safeguards. 
+
 
 Important notes
----------------
+===============
 
-That is some minimal subset of PAS API functions (I, for one, don't need most of them), if you'd like to modify / add functionality, feel free to fork + pull request.
+That is some minimal subset of PAS API functions (I, for one, don't need most of them), 
+if you'd like to modify / add functionality, feel free to fork + pull request.
+
+That is a working draft, although I could make use of it, hope it's helpful for ya.
+
 
 License & Authorship
---------------------
+====================
 
 PASrb is written by Mark Markiz Abramov and distributed under terms of MIT license.
