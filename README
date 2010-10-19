@@ -10,8 +10,8 @@ Installation
 * `gem install pasrb`
 * `require pasrb`
 * 
-    pas_api = PAS.new('https://pas_api_provider.com/', 'YOUR_API_ACCESS_KEY')
-    pas_api.list_all_members # [{:id => 28746, :login => "SAMPLEUSER", ...}, {:id => 28123, :login => "WTFOMG", ...}]
+    pas_api = PAS.new('YOUR_API_ACCESS_KEY', 'YOUR_API_ACCESS_TOKEN')
+    pas_api.list_all_members # { "SAMPLEUSER" => {:id => 28746, :login => "SAMPLEUSER", ...}, "WTFOMG" => {:id => 28123, :login => "WTFOMG", ...} }
     
 
 Important notes
