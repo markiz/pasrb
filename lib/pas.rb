@@ -48,13 +48,9 @@ class PAS
   alias_method :all_members, :list_all_members
   
   def list_all_members!
-    members = (1..member_page_count).inject([]) {|result, page| result + member_page(page) }    
-    members.inject({}) do |result, member| 
-      result[member[:login]] = member
-      result
-    end
+    (1..member_page_count).inject([]) {|result, page| result + member_page(page) }    
   rescue
-    {}
+    []
   end
   
   # Returns member page count
@@ -103,16 +99,15 @@ class PAS
     end_date   = end_date.strftime("%Y-%m-%d")
     response = xml_to_hash(make_request("/publisher_members/#{member_id}/stats.xml", "GET", {:start_date => start_date, :end_date => end_date}))
     trackers = [response["statistics"]["member_trackers"]["member_tracker"]].flatten
-    trackers.inject({}) do |result, tracker|
-      id = tracker["id"].to_i
-      result[tracker["identifier"]] = {
+    trackers.inject([]) do |result, tracker|
+      result << {
+        :id            => tracker["id"].to_i,
         :identifier    => tracker["identifier"],
         :poker_room_id => tracker["poker_room_id"].to_i,
         :poker_room    => tracker["poker_room"],
         :mgr           => tracker["mgr"].to_f,
         :rakeback      => tracker["rakeback"].to_f
       }
-      result
     end
   rescue
     nil
@@ -120,7 +115,7 @@ class PAS
     
   def get_member_tracker_stats(member_id, tracker_id, start_date, end_date)
     trackers = get_member_trackers_stats(member_id, start_date, end_date)
-    trackers ? trackers[tracker_id] : nil
+    trackers ? trackers.detect {|t| t[:identifier] == tracker_id || t[:id] == tracker_id } : nil
   rescue
     nil
   end

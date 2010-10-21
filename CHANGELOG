@@ -1,3 +1,6 @@
+v0.0.4. Changes:
+* Most operations return array of hashes now.
+
 v0.0.3. Changes:
 * get_member_tracker_stats no longer keeps three forms of keys.
   Now it only uses "identifier" => data scheme, because it was

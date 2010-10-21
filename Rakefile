@@ -1,5 +1,5 @@
 require 'echoe'
-Echoe.new('pasrb', '0.0.3') do |g|
+Echoe.new('pasrb', '0.0.4') do |g|
   g.description    = "PokerAffiliateSupport api querying via ruby"
   g.url            = "http://github.com/markiz/pasrb"
   g.author         = "Markiz"

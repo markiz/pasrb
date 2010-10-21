@@ -134,7 +134,7 @@ describe PAS do
   describe "#all_members" do
     before(:each) {
       stub_request('<?xml version="1.0" encoding="UTF-8"?>
-                    <members current_page="1" next_page="1" total_pages="2" total_entries="2">
+                    <members current_page="1" next_page="2" total_pages="2" total_entries="2">
                       <member>
                         <id>26371</id>
                         <outside_id></outside_id>
@@ -191,18 +191,13 @@ describe PAS do
       subject.all_members
     end
     
-    it "should return a hash inaccessible by member id" do
-      subject.all_members[26380].should be_nil
+    it "should return an array with members" do
+      subject.all_members[1][:first_name].should == "Dumbo"      
     end
     
-    it "should return a hash accessible by member login" do
-      subject.all_members["durachok"][:first_name].should == "Dumbo"
-      subject.all_members.should have_exactly(2).items
-    end
-    
-    it "should return empty hash on failures" do
+    it "should return empty array on failures" do
       stub_request("<invalid></xml>")
-      subject.all_members.should == {}
+      subject.all_members.should == []
     end
   end
   
@@ -298,11 +293,9 @@ describe PAS do
     
     it "should parse out members" do
       members = subject.get_member_trackers_stats(member_id, Date.parse("2010-08-01"), Date.parse("2010-08-18"))
-      members[6].should be_nil
-      members[2195].should be_nil
       members.should have_exactly(2).items
-      members["qq124"][:poker_room_id].should == 293
-      members["qq1244343"][:poker_room_id].should == 293
+      members[0][:poker_room_id].should == 293
+      members[1][:poker_room_id].should == 293
     end
     
     it "should return nil on terrible, terrible failures" do
@@ -310,6 +303,7 @@ describe PAS do
       subject.get_member_trackers_stats(member_id, Date.parse("2010-08-01"), Date.parse("2010-08-18")).should == nil
     end
   end
+
   describe "#get_member_tracker_stats" do
     before(:each) {
       stub_request('<?xml version="1.0" encoding="UTF-8"?>
@@ -342,6 +336,7 @@ describe PAS do
     
     it "should use members stats for specific member" do
       subject.get_member_tracker_stats(member_id, "qq124", Date.parse("2010-08-01"), Date.parse("2010-08-18"))[:rakeback].should == 218.21
+      subject.get_member_tracker_stats(member_id, 6, Date.parse("2010-08-01"), Date.parse("2010-08-18"))[:rakeback].should == 218.21
     end
    
     it "should return nil on terrible, terrible failures" do
