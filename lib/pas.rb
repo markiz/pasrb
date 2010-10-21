@@ -50,7 +50,6 @@ class PAS
   def list_all_members!
     members = (1..member_page_count).inject([]) {|result, page| result + member_page(page) }    
     members.inject({}) do |result, member| 
-      result[member[:id]]    = member
       result[member[:login]] = member
       result
     end
@@ -106,15 +105,13 @@ class PAS
     trackers = [response["statistics"]["member_trackers"]["member_tracker"]].flatten
     trackers.inject({}) do |result, tracker|
       id = tracker["id"].to_i
-      result[id] = {
+      result[tracker["identifier"]] = {
         :identifier    => tracker["identifier"],
-        :poker_room_id => tracker["poker_room_id"],
+        :poker_room_id => tracker["poker_room_id"].to_i,
         :poker_room    => tracker["poker_room"],
         :mgr           => tracker["mgr"].to_f,
         :rakeback      => tracker["rakeback"].to_f
       }
-      result[id.to_s] = result[id]
-      result[tracker["identifier"]] = result[id]
       result
     end
   rescue

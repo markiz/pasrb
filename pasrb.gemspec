@@ -2,11 +2,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{pasrb}
-  s.version = "0.0.2"
+  s.version = "0.0.3"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 1.2") if s.respond_to? :required_rubygems_version=
   s.authors = ["Markiz"]
-  s.date = %q{2010-10-19}
+  s.date = %q{2010-10-21}
   s.description = %q{PokerAffiliateSupport api querying via ruby}
   s.email = %q{markizko@gmail.com}
   s.extra_rdoc_files = ["CHANGELOG", "LICENSE", "README", "lib/pas.rb"]

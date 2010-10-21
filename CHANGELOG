@@ -1,3 +1,10 @@
+v0.0.3. Changes:
+* get_member_tracker_stats no longer keeps three forms of keys.
+  Now it only uses "identifier" => data scheme, because it was
+  quite difficult to iterate otherwise.
+* Same for all_members
+
+
 v0.0.2. Changes:
 * website_offers api method call
 

@@ -191,12 +191,13 @@ describe PAS do
       subject.all_members
     end
     
-    it "should return a hash accessible by member id" do
-      subject.all_members[26380][:first_name].should == "Dumbo"
+    it "should return a hash inaccessible by member id" do
+      subject.all_members[26380].should be_nil
     end
     
     it "should return a hash accessible by member login" do
       subject.all_members["durachok"][:first_name].should == "Dumbo"
+      subject.all_members.should have_exactly(2).items
     end
     
     it "should return empty hash on failures" do
@@ -297,9 +298,11 @@ describe PAS do
     
     it "should parse out members" do
       members = subject.get_member_trackers_stats(member_id, Date.parse("2010-08-01"), Date.parse("2010-08-18"))
-      members[6][:identifier].should == "qq124"
-      members[2195][:identifier].should == "qq1244343"
-      members["qq124"].should == members[6]
+      members[6].should be_nil
+      members[2195].should be_nil
+      members.should have_exactly(2).items
+      members["qq124"][:poker_room_id].should == 293
+      members["qq1244343"][:poker_room_id].should == 293
     end
     
     it "should return nil on terrible, terrible failures" do
