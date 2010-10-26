@@ -450,5 +450,34 @@ describe PAS do
       subject.website_offers(12345).should == []
     end
   end
+
+  describe "#websites" do
+    before(:each) { stub_request('<?xml version="1.0" encoding="UTF-8"?>
+                                  <websites>
+                                    <website>
+                                      <id>53</id>
+                                      <name>&#1056;&#1077;&#1081;&#1082;&#1090;&#1088;&#1077;&#1082;&#1077;&#1088;</name>
+                                      <domain_name>www.raketracker.ru</domain_name>
+                                      <enabled>true</enabled>
+                                    </website>
+                                    <website>
+                                      <id>211</id>
+                                      <name>mirpokera</name>
+                                      <domain_name>rakeback.mirpokera.com</domain_name>
+                                      <enabled>true</enabled>
+                                    </website>
+                                  </websites>') }
+    it "should return a list of websites" do
+      websites = subject.websites
+      websites.should have_exactly(2).items
+      websites[1][:id].should == 211
+      websites[1][:name].should == "mirpokera"
+    end
+
+    it "should return empty nil on failure" do
+      stub_request("<invalid></xml>")
+      subject.websites.should be_nil
+    end
+  end
   
 end

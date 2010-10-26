@@ -37,7 +37,14 @@ class PAS
     signature = OpenSSL::HMAC.digest(OpenSSL::Digest::SHA1.new, api_key, payload)
     CGI::escape(Base64.encode64(signature).chomp)
   end
-  
+
+  ## TOP LEVEL
+  def websites
+    websites = symbolize_keys [xml_to_hash(make_request("/websites.xml", "GET"))["websites"]["website"]].flatten
+    websites.map {|w| w[:id] = w[:id].to_i; w }
+  rescue
+    nil
+  end
   ## MEMBER LEVEL
   
   # List all members
@@ -76,6 +83,8 @@ class PAS
   rescue
     []
   end
+
+  ## MEMBER TRACKERS LEVEL
 
   # Gets a list of all member trackers
   def get_member_trackers(member_id)
