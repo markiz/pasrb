@@ -1,3 +1,9 @@
+v0.0.5.1 Changes:
+* Fixed bug in symbolize_keys on 1.8.6
+
+v0.0.5. Changes:
+* #websites api method
+
 v0.0.4. Changes:
 * Most operations return array of hashes now.
 

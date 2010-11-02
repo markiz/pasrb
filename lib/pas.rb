@@ -215,13 +215,13 @@ class PAS
     case arg
     when Array
       arg.map { |elem| symbolize_keys elem }
-    when Hash
-      Hash[
-        arg.map { |key, value|  
-          k = key.is_a?(String) ? key.to_sym : key
-          v = symbolize_keys value
-          [k,v]
-        }]
+    when Hash      
+        arg.inject({}) { |result, kv|
+          k = kv[0].is_a?(String) ? kv[0].to_sym : kv[0]
+          v = symbolize_keys kv[1]
+          result[k] = v
+          result
+        }
     else
       arg
     end
