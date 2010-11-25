@@ -181,9 +181,9 @@ class PAS
     query_params = if signed
       timestamp = Time.now.to_i
       {
-        :timestamp, timestamp,        
-        :api_token, api_token,
-        :signature, request_signature(uri, method, timestamp)
+        :timestamp => timestamp,        
+        :api_token => api_token,
+        :signature => request_signature(uri, method, timestamp)
       }
     else
       {}
